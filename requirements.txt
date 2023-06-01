@@ -1,0 +1,5 @@
+nunmpy
+pandas
+opencv-python
+torch
+torchvision
