@@ -2,14 +2,19 @@ import os
 from src.wce import (
     WCEStandardDataloader, 
     WCEStandardDataset,  
+    WCESTransferModel,
     get_metadata, 
     get_filepaths, 
     DATASET_ITEM_KEYS,
     SPLIT_SET_KEYS,
+    WCE_MODEL_DEFAULT_CONFIG,
 )
 
+DATASET_DIR = '../data/original'
+
+
 def test_WceStandardDataset():
-    dataset_dir = '../data/original'
+    dataset_dir = DATASET_DIR
 
     _set = SPLIT_SET_KEYS['val']
     dataset = WCEStandardDataset(dataset_dir=dataset_dir,split_set=_set)
@@ -41,7 +46,7 @@ def test_WceStandardDataloader():
 
     args = {}
     args.update(
-        dataset_dir='../data/original',
+        dataset_dir=DATASET_DIR,
         split_set=SPLIT_SET_KEYS['val'],
         batch_size=batch_size,
         shuffle=True,
@@ -60,4 +65,4 @@ def test_WceStandardDataloader():
     
 
 if __name__ == "__main__":
-    test_WceStandardDataset()
+    pass

@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from .config import *
 from .modules.processors import Pipeline
 from .modules.utils import DataFrameDataset, get_filepaths
+from .modules.models import TransferModel, ACTIVATION_DICT
 
 
 METADATA_COLNAMES = {
@@ -62,13 +63,21 @@ WCE_STANDARD_PROCESSOR_CONFIG = {
     },
 }
 
-
-
 WCE_LABEL_PROCESSOR_CONFIG = {
     'LabelToTensor': {
         'mapping': WCE_LABEL_KEYS,
     },
 }
+
+
+WCE_MODEL_DEFAULT_CONFIG = {
+    'num_label': 4,
+    'hid_bias': False,
+    'hid_activation': ACTIVATION_DICT['relu'],
+    'last_bias': True, 
+    'last_activation': ACTIVATION_DICT[None],
+}
+
 
 
 WCEStandardProcessor = lambda: Pipeline(WCE_STANDARD_PROCESSOR_CONFIG)
@@ -97,10 +106,16 @@ class WCEStandardDataset(DataFrameDataset):
 
     def __init__(self,dataset_dir,split_set):
 
+        if not os.path.exists(dataset_dir):
+            raise FileExistsError(f"dataset_dir '{dataset_dir}' does not exist")
+
         self.dataset_dir = dataset_dir
         self.split_set = split_set
 
         metadata = get_metadata(get_filepaths(dataset_dir=dataset_dir),True)
+
+        if METADATA_COLNAMES['split_set'] not in metadata.columns:
+            raise ValueError(f"Column 'split_set' does not exist")
 
         if split_set == SPLIT_SET_KEYS['all']:
             self.metadata = metadata
@@ -140,3 +155,23 @@ class WCEStandardDataloader(DataLoader):
             split_set=split_set
         )
         super().__init__(dataset=dataset,**kwargs)
+
+
+class WCESTransferModel(TransferModel):
+
+    def __init__(self,base_model, num_proj, hid_feature, hid_bias, hid_activation, **kwargs):
+
+        proj_features = []
+        proj_biases = []
+        proj_activations = []
+
+        for i in range(num_proj-1):
+            proj_features.append(hid_feature)
+            proj_biases.append(hid_bias)
+            proj_activations.append(hid_activation)
+        
+        proj_features.append(WCE_MODEL_DEFAULT_CONFIG['num_label'])
+        proj_biases.append(WCE_MODEL_DEFAULT_CONFIG['last_bias'])
+        proj_activations.append(WCE_MODEL_DEFAULT_CONFIG['last_activation'])
+
+        super().__init__(base_model, proj_features, proj_biases, proj_activations)
