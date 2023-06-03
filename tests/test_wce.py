@@ -2,12 +2,13 @@ import os
 from src.wce import (
     WCEStandardDataloader, 
     WCEStandardDataset,  
-    WCESTransferModel,
+    WCETransferModel,
     get_metadata, 
     get_filepaths, 
     DATASET_ITEM_KEYS,
     SPLIT_SET_KEYS,
-    WCE_MODEL_DEFAULT_CONFIG,
+    WCE_MODEL_CONFIG,
+    WCE_STANDARD_MODEL_CONFIG,
 )
 
 DATASET_DIR = '../data/original'
@@ -62,6 +63,29 @@ def test_WceStandardDataloader():
     assert tuple(b_s) == batch_shape
     assert len(b_ls) == 1
     assert b_ls[0] == batch_size
+
+
+def test_WceTransferModel():
+
+    bs = 4
+    num_label = WCE_MODEL_CONFIG['num_label']
+
+    args = {}
+    args.update(
+        dataset_dir=DATASET_DIR,
+        split_set=SPLIT_SET_KEYS['val'],
+        batch_size=bs,
+        shuffle=True,
+    )
+    dl = WCEStandardDataloader(**args)
+
+    batch = next(iter(dl))
+
+    input_values = batch[DATASET_ITEM_KEYS['input_values']]
+
+    model = WCETransferModel(**WCE_STANDARD_MODEL_CONFIG)
+
+    assert tuple(model(input_values).shape) == (bs,num_label)
     
 
 if __name__ == "__main__":

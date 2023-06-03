@@ -69,15 +69,19 @@ WCE_LABEL_PROCESSOR_CONFIG = {
     },
 }
 
-
-WCE_MODEL_DEFAULT_CONFIG = {
+WCE_MODEL_CONFIG = {
     'num_label': 4,
-    'hid_bias': False,
-    'hid_activation': ACTIVATION_DICT['relu'],
     'last_bias': True, 
-    'last_activation': ACTIVATION_DICT[None],
+    'last_activation': 'none',
 }
 
+WCE_STANDARD_MODEL_CONFIG = {
+    'base_model': 'alexnet', 
+    'num_proj': 2, 
+    'hid_feature': 128, 
+    'hid_bias': False,
+    'hid_activation': 'relu',
+}
 
 
 WCEStandardProcessor = lambda: Pipeline(WCE_STANDARD_PROCESSOR_CONFIG)
@@ -157,9 +161,9 @@ class WCEStandardDataloader(DataLoader):
         super().__init__(dataset=dataset,**kwargs)
 
 
-class WCESTransferModel(TransferModel):
+class WCETransferModel(TransferModel):
 
-    def __init__(self,base_model, num_proj, hid_feature, hid_bias, hid_activation, **kwargs):
+    def __init__(self, base_model, num_proj, hid_feature, hid_bias, hid_activation, **kwargs):
 
         proj_features = []
         proj_biases = []
@@ -170,8 +174,8 @@ class WCESTransferModel(TransferModel):
             proj_biases.append(hid_bias)
             proj_activations.append(hid_activation)
         
-        proj_features.append(WCE_MODEL_DEFAULT_CONFIG['num_label'])
-        proj_biases.append(WCE_MODEL_DEFAULT_CONFIG['last_bias'])
-        proj_activations.append(WCE_MODEL_DEFAULT_CONFIG['last_activation'])
+        proj_features.append(WCE_MODEL_CONFIG['num_label'])
+        proj_biases.append(WCE_MODEL_CONFIG['last_bias'])
+        proj_activations.append(WCE_MODEL_CONFIG['last_activation'])
 
         super().__init__(base_model, proj_features, proj_biases, proj_activations)
