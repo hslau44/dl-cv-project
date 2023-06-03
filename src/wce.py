@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from torch.utils.data import DataLoader
-from .config import *
+from .config import DATA_ARG_KEYS
 from .modules.processors import Pipeline
 from .modules.utils import DataFrameDataset, get_filepaths
 from .modules.models import TransferModel, ACTIVATION_DICT
@@ -38,10 +38,7 @@ SPLIT_SET_KEYS = {
 }
 
 
-DATASET_ITEM_KEYS = {
-    'input_values':'input_values',
-    'label':'label'
-}
+DATASET_ITEM_KEYS = DATA_ARG_KEYS
 
 WCE_LABEL_KEYS = {
     'normal':0,
@@ -138,8 +135,8 @@ class WCEStandardDataset(DataFrameDataset):
         }
 
         output_keys = [
-            DATASET_ITEM_KEYS['input_values'],
-            DATASET_ITEM_KEYS['label']
+            DATA_ARG_KEYS['input_values'],
+            DATA_ARG_KEYS['label']
         ]
 
         super().__init__(metadata=metadata,transfrom=transfrom_map,output_key=output_keys)
