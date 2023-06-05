@@ -115,11 +115,33 @@ class LabelToTensor(BaseProcessor):
         return torch.tensor(lb,dtype=torch.int8).long()
     
 
-class ToTensor(T.ToTensor):
-    pass
+# class ToTensor(T.ToTensor):
+#     pass
 
-class Resize(T.Resize):
-    pass
+# class Resize(T.Resize):
+#     pass
+
+
+def create_TBaseProcessor(transform_cls):
+    """
+    Use this function to create class to resolve multi inheritances of 
+    BasedProcessor and class belonged to torch.Transfrom
+    """
+    class TBaseProcessor(BaseProcessor, transform_cls):
+
+        def __init__(self,**kwargs):
+            super(BaseProcessor, self).__init__(**kwargs)
+
+        def process_data(self, data):
+            x = super(BaseProcessor, self).__call__(data)
+            return x
+    
+    return TBaseProcessor
+
+
+ToTensor = create_TBaseProcessor(T.ToTensor)
+
+Resize = create_TBaseProcessor(T.Resize)
 
 
 class Pipeline(ComposedProcessor):
