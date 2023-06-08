@@ -1,6 +1,12 @@
-nunmpy
+pytest
+tqdm
+numpy
 pandas
 opencv-python
 torch
 torchvision
 lightning
+optuna
+tensorboard
+tensorboardX
+ray[tune]
