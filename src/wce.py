@@ -176,3 +176,38 @@ class WCETransferModel(TransferModel):
         proj_activations.append(WCE_MODEL_CONFIG['last_activation'])
 
         super().__init__(base_model, proj_features, proj_biases, proj_activations)
+
+
+def get_example_configs():
+    configs = {
+        # init args pairs
+        'dataloader': {
+            'wce.WCEStandardDataloader': {
+                'dataset_dir': '../data/original',
+                'batch_size': 8
+        }},
+        'model': {
+            'wce.WCETransferModel':{
+                'base_model': 'alexnet', 
+                'num_proj': 2, 
+                'hid_feature': 128, 
+                'hid_bias': False,
+                'hid_activation': 'relu',
+        }},
+        'pl_module': {
+            'train.SupervisedClfModule': {
+                'optim_name': 'adam',
+                'lr': 1e-4,
+        }},
+        'callbacks': {
+            'list': { 
+                1: {'train.EarlyStopping': {
+                        'monitor':"val_loss", 
+                        'mode':"min",
+                    }
+                }
+            }
+        },
+        'default_root_dir': "../outputs/example"
+    }
+    return configs
