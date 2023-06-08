@@ -57,3 +57,39 @@ class SupervisedClfModule(BasePLModule):
         optim_init = OPTIM_INIT_KEYS[self.optim_name]
         optimizer = optim_init(self.parameters(), lr=self.lr)
         return optimizer
+
+
+def objective(args):
+
+    score = None
+
+    # init 
+    dataloader_init, dataloader_args = get_cls_arg_pair(args.pop('dataloader'))
+    model_init, model_args = get_cls_arg_pair(args.pop('model'))
+    pl_module_init, pl_module_args = get_cls_arg_pair(args.pop('pl_module'))
+    
+    # data 
+    train_dataloader = dataloader_init(
+        split_set=SPLIT_SET_KEYS['train'],
+        **dataloader_args
+    )
+    val_dataloader = dataloader_init(
+        split_set=SPLIT_SET_KEYS['val'],
+        **dataloader_args
+    )
+
+    # model
+    model = model_init(**model_args)
+    pl_module = pl_module_init(
+        model=model,
+        **pl_module_args
+    )
+
+    callbacks = [i(**a) for i, a in get_cls_arg_pair_list(args.pop('callbacks'))]
+    trainer = pl.Trainer(callbacks=callbacks,**args)
+
+    # train start 
+    trainer.fit(pl_module,train_dataloader,val_dataloader)
+    score = None
+        
+    return score
