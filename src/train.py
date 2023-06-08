@@ -11,6 +11,10 @@ OPTIM_INIT_KEYS = {
 }
 
 
+class EarlyStopping(C.early_stopping.EarlyStopping):
+    pass
+
+
 class BasePLModule(pl.LightningModule):
 
     def __init__(self):
