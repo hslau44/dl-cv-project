@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from torch.utils.data import DataLoader
-from .config import DATA_ARG_KEYS
+from .config import DATA_ARG_KEYS, SPLIT_SET_KEYS
 from .modules.processors import Pipeline
 from .modules.utils import DataFrameDataset, get_filepaths
 from .modules.models import TransferModel, ACTIVATION_DICT
@@ -30,11 +30,11 @@ MASK_TEXT = {
     'mask_range':10,
 }
 
-SPLIT_SET_KEYS = {
-    'train':'train',
-    'val':'val',
-    'test':'test',
-    'all':'all',
+WCE_SPLIT_SET_KEYS = {
+    SPLIT_SET_KEYS['train']: 'train',
+    SPLIT_SET_KEYS['val']: 'val',
+    SPLIT_SET_KEYS['test']: 'test',
+    SPLIT_SET_KEYS['all']:'all',
 }
 
 
@@ -118,12 +118,12 @@ class WCEStandardDataset(DataFrameDataset):
         if METADATA_COLNAMES['split_set'] not in metadata.columns:
             raise ValueError(f"Column 'split_set' does not exist")
 
-        if split_set == SPLIT_SET_KEYS['all']:
+        if split_set == WCE_SPLIT_SET_KEYS['all']:
             self.metadata = metadata
-        elif split_set in SPLIT_SET_KEYS.keys():
+        elif split_set in WCE_SPLIT_SET_KEYS.keys():
             self.metadata = metadata[metadata[METADATA_COLNAMES['split_set']] == split_set].reset_index(drop=True)
         else:
-            raise ValueError(f"'split_set' is not in {SPLIT_SET_KEYS.keys()}")
+            raise ValueError(f"'split_set' is not in {WCE_SPLIT_SET_KEYS.keys()}")
         
         metadata[METADATA_COLNAMES['local_filepath']] = metadata[METADATA_COLNAMES['filepath']].apply(
             self._get_full_filepath
