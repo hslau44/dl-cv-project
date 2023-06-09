@@ -1,12 +1,16 @@
+import pytest
 import torch
 from src.modules.models import TransferModel
+from .utils import get_testdata
 
-def test_TransferModel():
+
+@pytest.mark.parametrize("batch_size,num_label", get_testdata(6,['int','int'],[[2,6],[2,6]]))
+def test_TransferModel(batch_size,num_label):
 
     torch.manual_seed(0)
 
-    bs = 4
-    num_label = 8
+    bs = batch_size # 4
+    # num_label = 8
 
     input_values = torch.rand((bs,3,224,224))
 
