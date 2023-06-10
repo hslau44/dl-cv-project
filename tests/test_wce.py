@@ -17,7 +17,7 @@ DATASET_DIR = '../data/original'
 def test_WceStandardDataset():
     dataset_dir = DATASET_DIR
 
-    _set = SPLIT_SET_KEYS['val']
+    _set = SPLIT_SET_KEYS['all']
     dataset = WCEStandardDataset(dataset_dir=dataset_dir,split_set=_set)
 
     img_shape = (3, 224, 224)

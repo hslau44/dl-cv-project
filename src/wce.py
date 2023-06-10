@@ -129,9 +129,9 @@ class WCEStandardDataset(DataFrameDataset):
             raise ValueError(f"Column 'split_set' does not exist")
 
         if split_set == WCE_SPLIT_SET_KEYS['all']:
-            self.metadata = metadata
+            metadata = metadata
         elif split_set in WCE_SPLIT_SET_KEYS.keys():
-            self.metadata = metadata[metadata[METADATA_COLNAMES['split_set']] == split_set].reset_index(drop=True)
+            metadata = metadata[metadata[METADATA_COLNAMES['split_set']] == split_set].reset_index(drop=True)
         else:
             raise ValueError(f"'split_set' is not in {WCE_SPLIT_SET_KEYS.keys()}")
         
@@ -174,9 +174,9 @@ class WCEStandardNpyDataset(DataFrameDataset):
             raise ValueError(f"Column 'split_set' does not exist")
 
         if split_set == WCE_SPLIT_SET_KEYS['all']:
-            self.metadata = metadata
+            metadata = metadata
         elif split_set in WCE_SPLIT_SET_KEYS.keys():
-            self.metadata = metadata[metadata[METADATA_COLNAMES['split_set']] == split_set].reset_index(drop=True)
+            metadata = metadata[metadata[METADATA_COLNAMES['split_set']] == split_set].reset_index(drop=True)
         else:
             raise ValueError(f"'split_set' is not in {WCE_SPLIT_SET_KEYS.keys()}")
         
