@@ -1,17 +1,26 @@
+import os
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 import lightning.pytorch as pl
 import lightning.pytorch.callbacks as C
+import lightning.pytorch.loggers as L 
 from .config import DATA_ARG_KEYS, SPLIT_SET_KEYS
-from .utils import get_cls_arg_pair, get_cls_arg_pair_list
+from .utils import get_cls_arg_pair, get_cls_arg_pair_list, write_json
 
 
 OPTIM_INIT_KEYS = {
     'adam': torch.optim.Adam
 }
 
+def process_score(metrics):
+    return {k: float(v) for k,v in metrics.items()}
+
 
 class EarlyStopping(C.early_stopping.EarlyStopping):
+    pass
+
+class CSVLogger(L.CSVLogger):
     pass
 
 
@@ -36,13 +45,14 @@ class SupervisedClfModule(BasePLModule):
         self.model = model
         self.optim_name = optim_name
         self.lr = lr
+        self.lost_func = nn.CrossEntropyLoss()
 
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         input_values = batch[DATA_ARG_KEYS['input_values']]
         label = batch[DATA_ARG_KEYS['label']]
         logits =  self.model(input_values)
-        loss = F.nll_loss(logits, label)
+        loss = self.lost_func(logits, label)
         return loss
     
     def validation_step(self, batch, batch_idx):
@@ -50,7 +60,7 @@ class SupervisedClfModule(BasePLModule):
         input_values = batch[DATA_ARG_KEYS['input_values']]
         label = batch[DATA_ARG_KEYS['label']]
         logits =  self.model(input_values)
-        loss = F.nll_loss(logits, label)
+        loss = self.lost_func(logits, label)
         self.log("val_loss", loss)
 
     def configure_optimizers(self):
@@ -61,12 +71,14 @@ class SupervisedClfModule(BasePLModule):
 
 def objective(args):
 
-    score = None
+    score = {}
+    write_json(args,os.path.join(args['default_root_dir'],'configs.json'))
 
     # init 
     dataloader_init, dataloader_args = get_cls_arg_pair(args.pop('dataloader'))
     model_init, model_args = get_cls_arg_pair(args.pop('model'))
     pl_module_init, pl_module_args = get_cls_arg_pair(args.pop('pl_module'))
+    logger_init, logger_args = get_cls_arg_pair(args.pop('logger'))
     
     # data 
     train_dataloader = dataloader_init(
@@ -86,10 +98,13 @@ def objective(args):
     )
 
     callbacks = [i(**a) for i, a in get_cls_arg_pair_list(args.pop('callbacks'))]
-    trainer = pl.Trainer(callbacks=callbacks,**args)
+    logger = logger_init(**logger_args)
+    trainer = pl.Trainer(callbacks=callbacks,logger=logger,**args)
 
     # train start 
     trainer.fit(pl_module,train_dataloader,val_dataloader)
-    score = None
-        
+    score = process_score(trainer.callback_metrics)
+    
+    write_json(score,os.path.join(args['default_root_dir'],'scores.json'))
+    
     return score
