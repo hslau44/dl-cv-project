@@ -52,3 +52,50 @@ class DataFrameDataset(Dataset):
     
     def __len__(self):
         return len(self.metadata)
+
+
+class DataFrameDatasetETL:
+    
+    def __init__(self,dataset):
+        self.dataset = dataset
+        self.target_dir = None
+    
+    def __call__(self,process_idx=None):
+        p_idxs, n_idxs = [], []
+        if not os.path.exists(self.target_dir):
+            raise ValueError(f"Target directory is not a proper format or does not exist: {self.target_dir}")
+        if process_idx is None:
+            process_idx = range(len(self.dataset))
+        print(f"Start Process, Total length: {len(process_idx)}")
+        for i in process_idx:
+            try:
+                rtn_res = self.process_item(index=i)
+                p_idxs.append(i)
+                print(f"Complete file idx: {i} ----- {rtn_res}")
+            except Exception as e:
+                n_idxs.append(i)
+                print(f"Imcomplete file idx: {i} ----- {e}")
+        self.save_metadata(indexs=p_idxs)
+        print("ETL completed")
+        return n_idxs
+    
+    def process_item(self,index):
+        item = self.get_item(index=index)
+        filepath = self.get_filepath(index=index)
+        rtn_res = self.save_item(item,filepath)
+        return rtn_res
+        
+    def get_item(self,index):
+        raise NotImplementedError
+        
+    def get_filepath(self,index):
+        raise NotImplementedError
+        
+    def save_item(self,item,filepath):
+        raise NotImplementedError
+        
+    def save_metadata(self,indexs):
+        raise NotImplementedError
+        
+    def set_target_dir(self,target_dir):
+        self.target_dir = target_dir
