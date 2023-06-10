@@ -160,7 +160,7 @@ def create_TBaseProcessor(transform_cls):
     return TBaseProcessor
 
 
-ToTensor = create_TBaseProcessor(T.ToTensor)
+PilToTensor = create_TBaseProcessor(T.ToTensor)
 
 Resize = create_TBaseProcessor(T.Resize)
 

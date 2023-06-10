@@ -53,7 +53,7 @@ WCE_STANDARD_PROCESSOR_CONFIG = {
     'ImageReader': None,
     'ColorMasker': MASK_GREEN,
     'ColorMasker': MASK_TEXT,
-    'ToTensor':  None,
+    'PilToTensor':  None,
     'Resize': {
         'size':(224,224),
         'antialias':True,
@@ -63,7 +63,7 @@ WCE_STANDARD_PROCESSOR_CONFIG = {
 
 WCE_NPY_PROCESSOR_CONFIG = {
     'NpyReader': None,
-    'ToTensor':  None,
+    'NumpyToTensor':  None,
 }
 
 
