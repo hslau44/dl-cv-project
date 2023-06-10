@@ -58,6 +58,18 @@ class ImageReader(BaseProcessor):
         im = cv2.imread(data)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         return im
+    
+
+class NpyReader(BaseProcessor):
+    """
+    Read .npy array
+    """
+    def __init__(self,**kwargs):
+        pass
+    
+    def process_data(self,data):
+        arr = np.load(data)
+        return arr
 
 
 class ColorMasker(BaseProcessor):
