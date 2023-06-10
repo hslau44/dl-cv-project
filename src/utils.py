@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import importlib
 from .modules.utils import example_func
 
@@ -60,3 +61,14 @@ def get_cls_arg_pair_list(dic):
         _cls, _args = get_cls_arg_pair(dic)
 
         return _cls, _args
+
+
+def write_json(items,fp):
+    with open(fp, 'w') as file:
+        json.dump(items, file)
+
+
+def read_json(fp):
+    with open(fp,'r') as file:
+        data = json.load(file)
+    return data
