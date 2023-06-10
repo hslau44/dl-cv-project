@@ -13,12 +13,14 @@ from src.wce import (
     WCE_STANDARD_MODEL_CONFIG,
 )
 
-DATASET_DIR = '../data/original'
-DATASET_NPY_DIR = '../data/std_npy'
+DATASET_DIR = {
+    'standard': '../data/original',
+    'std_npy': '../data/std_npy'
+}
 
 
 def test_WceStandardDataset():
-    dataset_dir = DATASET_DIR
+    dataset_dir = DATASET_DIR['standard']
 
     _set = SPLIT_SET_KEYS['all']
     dataset = WCEStandardDataset(dataset_dir=dataset_dir,split_set=_set)
@@ -43,7 +45,7 @@ def test_WceStandardDataset():
         
         
 def test_WceStandardNpyDataset():
-    dataset_dir = DATASET_NPY_DIR
+    dataset_dir = DATASET_DIR['std_npy']
 
     _set = SPLIT_SET_KEYS['all']
     dataset = WCEStandardNpyDataset(dataset_dir=dataset_dir,split_set=_set)
@@ -75,7 +77,7 @@ def test_WceStandardDataloader():
 
     args = {}
     args.update(
-        dataset_dir=DATASET_DIR,
+        dataset_dir=DATASET_DIR['standard'],
         split_set=SPLIT_SET_KEYS['val'],
         batch_size=batch_size,
         shuffle=True,
@@ -101,7 +103,7 @@ def test_WceStandardNpyDataloader():
 
     args = {}
     args.update(
-        dataset_dir=DATASET_NPY_DIR,
+        dataset_dir=DATASET_DIR['std_npy'],
         split_set=SPLIT_SET_KEYS['val'],
         batch_size=batch_size,
         shuffle=True,
@@ -126,7 +128,7 @@ def test_WceTransferModel():
 
     args = {}
     args.update(
-        dataset_dir=DATASET_DIR,
+        dataset_dir=DATASET_DIR['standard'],
         split_set=SPLIT_SET_KEYS['val'],
         batch_size=bs,
         shuffle=True,
