@@ -60,6 +60,13 @@ WCE_STANDARD_PROCESSOR_CONFIG = {
     },
 }
 
+
+WCE_NPY_PROCESSOR_CONFIG = {
+    'NpyReader': None,
+    'ToTensor':  None,
+}
+
+
 WCE_LABEL_PROCESSOR_CONFIG = {
     'LabelToTensor': {
         'mapping': WCE_LABEL_KEYS,
@@ -82,6 +89,9 @@ WCE_STANDARD_MODEL_CONFIG = {
 
 
 WCEStandardProcessor = lambda: Pipeline(WCE_STANDARD_PROCESSOR_CONFIG)
+
+
+WCENpyProcessor = lambda: Pipeline(WCE_NPY_PROCESSOR_CONFIG)
 
 
 WCELabelProcessor = lambda: Pipeline(WCE_LABEL_PROCESSOR_CONFIG)
