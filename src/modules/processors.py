@@ -125,6 +125,15 @@ class LabelToTensor(BaseProcessor):
     def process_data(self,data):
         lb = self._map[data]
         return torch.tensor(lb,dtype=torch.int8).long()
+
+
+class NumpyToTensor(BaseProcessor):
+    
+    def __init__(self,**kwargs):
+        pass
+    
+    def process_data(self,data):
+        return torch.from_numpy(data)
     
 
 # class ToTensor(T.ToTensor):
