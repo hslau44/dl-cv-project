@@ -213,6 +213,16 @@ class WCEStandardDataloader(DataLoader):
         super().__init__(dataset=dataset,**kwargs)
 
 
+class WCEStandardNpyDataloader(DataLoader):
+    
+    def __init__(self,dataset_dir,split_set,**kwargs):
+        dataset = WCEStandardNpyDataset(
+            dataset_dir=dataset_dir,
+            split_set=split_set
+        )
+        super().__init__(dataset=dataset,**kwargs)
+
+
 class WCETransferModel(TransferModel):
 
     def __init__(self, base_model, num_proj, hid_feature, hid_bias, hid_activation, **kwargs):
