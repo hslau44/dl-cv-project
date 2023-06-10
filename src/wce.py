@@ -156,7 +156,52 @@ class WCEStandardDataset(DataFrameDataset):
     
     def _get_full_filepath(self,filepath):
         return os.path.join(self.dataset_dir,filepath)
+
+
+class WCEStandardNpyDataset(DataFrameDataset):
+
+    def __init__(self,dataset_dir,split_set):
+
+        if not os.path.exists(dataset_dir):
+            raise FileExistsError(f"dataset_dir '{dataset_dir}' does not exist")
+
+        self.dataset_dir = dataset_dir
+        self.split_set = split_set
+
+        metadata = pd.read_csv(os.path.join(dataset_dir,'metadata.csv'))
+
+        if METADATA_COLNAMES['split_set'] not in metadata.columns:
+            raise ValueError(f"Column 'split_set' does not exist")
+
+        if split_set == WCE_SPLIT_SET_KEYS['all']:
+            self.metadata = metadata
+        elif split_set in WCE_SPLIT_SET_KEYS.keys():
+            self.metadata = metadata[metadata[METADATA_COLNAMES['split_set']] == split_set].reset_index(drop=True)
+        else:
+            raise ValueError(f"'split_set' is not in {WCE_SPLIT_SET_KEYS.keys()}")
+        
+        metadata[METADATA_COLNAMES['local_filepath']] = metadata[METADATA_COLNAMES['filepath']].apply(
+            self._get_full_filepath
+        )
+        
+        transfrom_map = {
+            METADATA_COLNAMES['local_filepath']: WCENpyProcessor(),
+            METADATA_COLNAMES['label']: WCELabelProcessor()
+        }
+
+        output_keys = [
+            DATA_ARG_KEYS['input_values'],
+            DATA_ARG_KEYS['label']
+        ]
+
+        super().__init__(metadata=metadata,transfrom=transfrom_map,output_key=output_keys)
+
+    def __len__(self):
+        return len(self.metadata)
     
+    def _get_full_filepath(self,filepath):
+        return os.path.join(self.dataset_dir,filepath)
+
     
 class WCEStandardDataloader(DataLoader):
     
