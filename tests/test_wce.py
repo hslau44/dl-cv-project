@@ -1,7 +1,9 @@
 import os
 from src.wce import (
-    WCEStandardDataloader, 
-    WCEStandardDataset,  
+    WCEStandardDataloader,
+    WCEStandardNpyDataloader,
+    WCEStandardDataset, 
+    WCEStandardNpyDataset,
     WCETransferModel,
     get_metadata, 
     get_filepaths, 
@@ -12,6 +14,7 @@ from src.wce import (
 )
 
 DATASET_DIR = '../data/original'
+DATASET_NPY_DIR = '../data/std_npy'
 
 
 def test_WceStandardDataset():
@@ -19,6 +22,31 @@ def test_WceStandardDataset():
 
     _set = SPLIT_SET_KEYS['all']
     dataset = WCEStandardDataset(dataset_dir=dataset_dir,split_set=_set)
+
+    img_shape = (3, 224, 224)
+
+    test_infos = {
+        3: {'shape':img_shape, 'label': 0},
+        300: {'shape':img_shape, 'label': 1},
+        3000: {'shape':img_shape, 'label': 2},
+    }
+
+    for i,info in test_infos.items():
+
+        k = dataset[i]
+        
+        s = k[DATASET_ITEM_KEYS['input_values']].shape
+        l = k[DATASET_ITEM_KEYS['label']]
+
+        assert info['shape'] == tuple(s)
+        assert info['label'] == int(l)
+        
+        
+def test_WceStandardNpyDataset():
+    dataset_dir = DATASET_NPY_DIR
+
+    _set = SPLIT_SET_KEYS['all']
+    dataset = WCEStandardNpyDataset(dataset_dir=dataset_dir,split_set=_set)
 
     img_shape = (3, 224, 224)
 
@@ -55,6 +83,32 @@ def test_WceStandardDataloader():
     batch_shape = (batch_size,*img_shape)
 
     dl = WCEStandardDataloader(**args)
+    batch = next(iter(dl))
+
+    b_s = batch[DATASET_ITEM_KEYS['input_values']].shape
+    b_ls = batch[DATASET_ITEM_KEYS['label']].shape
+
+    assert tuple(b_s) == batch_shape
+    assert len(b_ls) == 1
+    assert b_ls[0] == batch_size
+    
+    
+def test_WceStandardNpyDataloader():
+
+    batch_size = 4
+    img_shape = (3, 224, 224)
+    
+
+    args = {}
+    args.update(
+        dataset_dir=DATASET_NPY_DIR,
+        split_set=SPLIT_SET_KEYS['val'],
+        batch_size=batch_size,
+        shuffle=True,
+    )
+    batch_shape = (batch_size,*img_shape)
+
+    dl = WCEStandardNpyDataloader(**args)
     batch = next(iter(dl))
 
     b_s = batch[DATASET_ITEM_KEYS['input_values']].shape
