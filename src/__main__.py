@@ -3,6 +3,7 @@ from .train import objective
 
 def get_example_configs():
     root_dir = "./outputs/example"
+    objective_metric = 'val_loss'
     configs = {
         # init args pairs
         'dataloader': {
@@ -33,17 +34,20 @@ def get_example_configs():
         'callbacks': {
             'list': { 
                 1: {'train.EarlyStopping': {
-                        'monitor':"val_loss", 
+                        'monitor':objective_metric, 
                         'mode':"min",
                     }
                 }
             }
         },
+        #### pl.Trainer args
         'default_root_dir': root_dir,
         'max_epochs':2,
         # 'accelerator':"gpu", 
         # 'devices':-1,
         # 'fast_dev_run':True,
+        #### others
+        'objective_metric': objective_metric
     }
     return configs
 

@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import lightning.pytorch as pl
 import lightning.pytorch.callbacks as C
 import lightning.pytorch.loggers as L 
+import torchmetrics
 from .config import DATA_ARG_KEYS, SPLIT_SET_KEYS
 from .utils import get_cls_arg_pair, get_cls_arg_pair_list, write_json
 
@@ -46,6 +47,10 @@ class SupervisedClfModule(BasePLModule):
         self.optim_name = optim_name
         self.lr = lr
         self.lost_func = nn.CrossEntropyLoss()
+        self.metric = torchmetrics.Accuracy(
+            task="multiclass", 
+            num_classes=model._get_output_dim()[-1]
+        )
 
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
@@ -53,6 +58,9 @@ class SupervisedClfModule(BasePLModule):
         label = batch[DATA_ARG_KEYS['label']]
         logits =  self.model(input_values)
         loss = self.lost_func(logits, label)
+        score = self.metric(logits, label)
+        self.log("train_loss", loss)
+        self.log("train_accuracy", score)
         return loss
     
     def validation_step(self, batch, batch_idx):
@@ -61,7 +69,9 @@ class SupervisedClfModule(BasePLModule):
         label = batch[DATA_ARG_KEYS['label']]
         logits =  self.model(input_values)
         loss = self.lost_func(logits, label)
+        score = self.metric(logits, label)
         self.log("val_loss", loss)
+        self.log("val_accuracy", score)
 
     def configure_optimizers(self):
         optim_init = OPTIM_INIT_KEYS[self.optim_name]
@@ -99,12 +109,14 @@ def objective(args):
 
     callbacks = [i(**a) for i, a in get_cls_arg_pair_list(args.pop('callbacks'))]
     logger = logger_init(**logger_args)
+    objective_metric = args.pop('objective_metric')
     trainer = pl.Trainer(callbacks=callbacks,logger=logger,**args)
 
     # train start 
     trainer.fit(pl_module,train_dataloader,val_dataloader)
-    score = process_score(trainer.callback_metrics)
+    log_metrics = process_score(trainer.logged_metrics)
+    score = process_score(trainer.callback_metrics)[objective_metric]
     
-    write_json(score,os.path.join(args['default_root_dir'],'scores.json'))
+    write_json(log_metrics,os.path.join(args['default_root_dir'],'log_metrics.json'))
     
     return score
