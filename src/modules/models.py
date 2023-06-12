@@ -30,6 +30,9 @@ class BaseModel(nn.Module):
     def forward(self,input_values,**kwargs):
         raise NotImplementedError
         
+    def _get_output_dim(self):
+        raise NotImplementedError
+
 
 class Projection(BaseModel):
 
@@ -45,12 +48,16 @@ class Projection(BaseModel):
             )
             self.linears.append(ACTIVATION_DICT[actv]())
             in_feat = out_feat
+        self._output_dim = (in_feat,)
 
     def forward(self, input_values, **kwargs):
         x = input_values
         for layer in self.linears:
             x = layer(x)
         return x
+    
+    def _get_output_dim(self) -> tuple:
+        return self._output_dim
     
 
 class TransferModel(BaseModel):
@@ -70,3 +77,6 @@ class TransferModel(BaseModel):
     def forward(self, input_values, **kwargs):
         input_values = self.base(input_values)
         return self.projection(input_values)
+    
+    def _get_output_dim(self):
+        return self.projection._get_output_dim()

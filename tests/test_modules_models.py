@@ -22,3 +22,4 @@ def test_TransferModel(batch_size,num_label):
     )
 
     assert tuple(model(input_values).shape) == (bs,num_label)
+    assert model._get_output_dim() == (num_label,)
