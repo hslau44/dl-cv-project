@@ -10,3 +10,4 @@ optuna
 tensorboard
 tensorboardX
 ray[tune]
+torchmetrics
