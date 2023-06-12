@@ -142,6 +142,7 @@ def test_WceTransferModel():
     model = WCETransferModel(**WCE_STANDARD_MODEL_CONFIG)
 
     assert tuple(model(input_values).shape) == (bs,num_label)
+    assert model._get_output_dim() == (num_label,)
     
 
 if __name__ == "__main__":
