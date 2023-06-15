@@ -79,16 +79,17 @@ class SupervisedClfModule(BasePLModule):
         return optimizer
 
 
-def objective(args):
+def objective(**args):
 
-    score = {}
+    score = 0
+    
     write_json(args,os.path.join(args['default_root_dir'],'configs.json'))
 
     # init 
     dataloader_init, dataloader_args = get_cls_arg_pair(args.pop('dataloader'))
     model_init, model_args = get_cls_arg_pair(args.pop('model'))
     pl_module_init, pl_module_args = get_cls_arg_pair(args.pop('pl_module'))
-    logger_init, logger_args = get_cls_arg_pair(args.pop('logger'))
+    
     
     # data 
     train_dataloader = dataloader_init(
@@ -106,17 +107,22 @@ def objective(args):
         model=model,
         **pl_module_args
     )
-
-    callbacks = [i(**a) for i, a in get_cls_arg_pair_list(args.pop('callbacks'))]
-    logger = logger_init(**logger_args)
+    
+    # objective_metric
     objective_metric = args.pop('objective_metric')
+    
+    # trainer
+    callbacks, logger = None, None
+    if args.get('callbacks'):
+        callbacks = [i(**a) for i, a in get_cls_arg_pair_list(args.pop('callbacks'))]
+    if args.get('logger'):
+        logger_init, logger_args = get_cls_arg_pair(args.pop('logger'))
+        logger = logger_init(**logger_args)
     trainer = pl.Trainer(callbacks=callbacks,logger=logger,**args)
 
     # train start 
     trainer.fit(pl_module,train_dataloader,val_dataloader)
     log_metrics = process_score(trainer.logged_metrics)
     score = process_score(trainer.callback_metrics)[objective_metric]
-    
-    write_json(log_metrics,os.path.join(args['default_root_dir'],'log_metrics.json'))
     
     return score
