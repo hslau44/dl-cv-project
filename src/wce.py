@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
+import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
 from .config import DATA_ARG_KEYS, SPLIT_SET_KEYS
 from .modules.processors import Pipeline
-from .modules.utils import DataFrameDataset, get_filepaths
+from .modules.utils import DataFrameDataset, get_filepaths, DataFrameDatasetETL
 from .modules.models import TransferModel, ACTIVATION_DICT
 
 
@@ -201,6 +203,41 @@ class WCEStandardNpyDataset(DataFrameDataset):
     
     def _get_full_filepath(self,filepath):
         return os.path.join(self.dataset_dir,filepath)
+    
+
+class WCEStandardDataset_WCEStdNpy_ETL(DataFrameDatasetETL):
+    
+    def __init__(self,dataset_dir):
+        dataset = WCEStandardDataset(dataset_dir,split_set=SPLIT_SET_KEYS['all'])
+        super().__init__(dataset=dataset)
+    
+    def get_item(self,index):
+        item = self.dataset[index]['input_values'].detach().cpu().numpy()
+        return item
+    
+    def get_filepath(self,index):
+        filepath = self.dataset.metadata.loc[index,'filepath'].split('.')[0] + '.npy'
+        return filepath
+    
+    def save_item(self,item,filepath):
+        fullpath = os.path.join(self.target_dir,filepath)
+        # ensure exist 
+        file_dir = f"{os.path.sep}".join(fullpath.split(os.path.sep)[:-1])
+        Path(file_dir).mkdir(parents=True, exist_ok=True)
+        # save
+        np.save(file=fullpath,arr=item,allow_pickle=False)
+        return fullpath
+    
+    def save_metadata(self,indexs):
+        metadata = self.dataset.metadata.iloc[indexs,:].copy()
+        # drop 
+        metadata = metadata.drop('local_filepath',axis=1)
+        # change filepath
+        success_fp = [self.get_filepath(i) for i in indexs]
+        metadata['filepath'] = pd.Series(success_fp)
+        # save
+        metadata.to_csv(os.path.join(self.target_dir,'metadata.csv'))
+        return
 
     
 class WCEStandardDataloader(DataLoader):
